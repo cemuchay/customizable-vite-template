@@ -1,6 +1,6 @@
 {
   "name": "@chizalam/create-vite-app",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Interactive CLI template generator for lightweight minimalist Vite + React setups with options for Tailwind CSS, React Router, Vitest, and Express.",
   "main": "setup.js",
   "bin": {
