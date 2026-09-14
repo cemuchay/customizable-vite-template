@@ -39,6 +39,15 @@ async function main() {
   const serverResponse = (await askQuestion('🖥️  Include simple Express + TypeScript server? (y/n, default: y): ')).trim().toLowerCase();
   const includeServer = serverResponse !== 'n';
 
+  const eslintResponse = (await askQuestion('🧹 Include ESLint v9 + Prettier code formatting? (y/n, default: y): ')).trim().toLowerCase();
+  const includeEslint = eslintResponse !== 'n';
+
+  const gitResponse = (await askQuestion('🌱 Initialize Git repository automatically? (y/n, default: y): ')).trim().toLowerCase();
+  const initGit = gitResponse !== 'n';
+
+  const pmChoice = (await askQuestion('📦 Select package manager (npm/pnpm/yarn/bun, default: npm): ')).trim().toLowerCase() || 'npm';
+  const pkgManager = ['npm', 'pnpm', 'yarn', 'bun'].includes(pmChoice) ? pmChoice : 'npm';
+
   const destinationResponse = (await askQuestion('📍 Configure in-place inside current directory? (y/n, default: y): ')).trim().toLowerCase();
   const inPlace = destinationResponse !== 'n';
 
@@ -50,6 +59,9 @@ async function main() {
   console.log(`- React Router v7:   ${includeRouter ? 'Yes' : 'No'}`);
   console.log(`- Testing (Vitest):  ${includeTesting ? 'Yes' : 'No'}`);
   console.log(`- Express Backend:   ${includeServer ? 'Yes' : 'No'}`);
+  console.log(`- ESLint + Prettier: ${includeEslint ? 'Yes' : 'No'}`);
+  console.log(`- Git Repository:    ${initGit ? 'Yes' : 'No'}`);
+  console.log(`- Package Manager:   ${pkgManager}`);
   console.log('');
 
   const confirm = (await askQuestion('Proceed with generation? (y/n, default: y): ')).trim().toLowerCase();
@@ -78,6 +90,8 @@ async function main() {
 
     // 3. Assemble Base files
     console.log('- Copying baseline template structures...');
+    copyTemplate('base/.gitignore', '.gitignore');
+    copyTemplate('base/.env.example', '.env.example');
     copyTemplate('base/index.html', 'index.html');
     copyTemplate('base/tsconfig.json', 'tsconfig.json');
     copyTemplate('base/tsconfig.app.json', 'tsconfig.app.json');
@@ -129,6 +143,13 @@ async function main() {
     if (includeServer) {
       console.log('- Copying server modules...');
       copyTemplate('server/index.ts', 'server/index.ts');
+    }
+
+    // 7b. Handle ESLint + Prettier Setup
+    if (includeEslint) {
+      console.log('- Injecting ESLint v9 flat config and Prettier rules...');
+      copyTemplate('eslint/eslint.config.js', 'eslint.config.js');
+      copyTemplate('eslint/.prettierrc', '.prettierrc');
     }
 
     // 8. Generate dynamic package.json
@@ -185,10 +206,24 @@ async function main() {
       packageJson.devDependencies["@testing-library/jest-dom"] = "^6.6.3";
     }
 
+    // Inject ESLint & Prettier dependencies
+    if (includeEslint) {
+      packageJson.scripts["lint"] = "eslint .";
+      packageJson.scripts["format"] = "prettier --write .";
+      packageJson.devDependencies["eslint"] = "^9.19.0";
+      packageJson.devDependencies["@eslint/js"] = "^9.19.0";
+      packageJson.devDependencies["eslint-plugin-react-hooks"] = "^5.1.0";
+      packageJson.devDependencies["eslint-plugin-react-refresh"] = "^0.4.18";
+      packageJson.devDependencies["globals"] = "^15.14.0";
+      packageJson.devDependencies["typescript-eslint"] = "^8.21.0";
+      packageJson.devDependencies["prettier"] = "^3.4.2";
+    }
+
     // Inject server dependencies
     if (includeServer) {
       packageJson.scripts["server"] = "tsx watch server/index.ts";
-      packageJson.scripts["dev"] = "concurrently \"npm run dev:client\" \"npm run server\"";
+      const devCmd = pkgManager === 'npm' ? 'npm run' : pkgManager;
+      packageJson.scripts["dev"] = `concurrently "${devCmd} dev:client" "${devCmd} server"`;
       packageJson.dependencies["express"] = "^4.21.2";
       packageJson.dependencies["cors"] = "^2.8.5";
       packageJson.devDependencies["tsx"] = "^4.19.2";
@@ -262,58 +297,62 @@ async function main() {
     );
 
     // 10. Generate project README.md
-    console.log('- Creating project specific README.md documentation...');
+    console.log('- Generating customized project README documentation...');
     let projectReadme = `# ${projectName}\n\n`;
-    projectReadme += `This is a highly optimized, minimalist React SPA bootstrapped using Vite, TypeScript, and customized styling configurations.\n\n`;
-    projectReadme += `## 🛠️ Stack Configuration\n\n`;
+    projectReadme += `This project was generated using \`@chizalam/create-vite-app\`.\n\n`;
+    projectReadme += `## 🛠 Tech Stack\n\n`;
+    projectReadme += `- **Framework**: React 19 + Vite 6 + TypeScript\n`;
     projectReadme += `- **Styling**: Tailwind CSS v${tailwindChoice}\n`;
-    projectReadme += `- **Routing**: ${includeRouter ? 'React Router v7 (Client Routing)' : 'None (State-based Navigation)'}\n`;
-    projectReadme += `- **State Management**: Zustand (Persistent Local Store)\n`;
-    projectReadme += `- **Data Fetching**: Axios client synced with TanStack Query (React Query)\n`;
-    projectReadme += `- **Icons**: Lucide React\n`;
-    projectReadme += `- **Testing**: ${includeTesting ? 'Vitest + Testing Library JSDOM' : 'None'}\n`;
-    projectReadme += `- **Server**: ${includeServer ? 'Express Backend (Running via tsx watch)' : 'None'}\n\n`;
-    projectReadme += `## 🚀 Getting Started\n\n`;
-    projectReadme += `### 1. Install Dependencies\n\`\`\`bash\nnpm install\n\`\`\`\n\n`;
-    projectReadme += `### 2. Run in Development Mode\n\`\`\`bash\nnpm run dev\n\`\`\`\n`;
+    if (includeRouter) projectReadme += `- **Routing**: React Router v7\n`;
+    if (includeTesting) projectReadme += `- **Testing**: Vitest + React Testing Library + JSDOM\n`;
+    if (includeServer) projectReadme += `- **Backend**: Express + TypeScript (\`tsx\` live reload)\n`;
+    if (includeEslint) projectReadme += `- **Linting & Formatting**: ESLint 9 + Prettier\n`;
+    projectReadme += `- **State & Async Data**: Zustand + TanStack Query v5\n\n`;
+    projectReadme += `## 🚀 Quick Start\n\n`;
+    projectReadme += `### 1. Install Dependencies\n\`\`\`bash\n${pkgManager} install\n\`\`\`\n\n`;
+    projectReadme += `### 2. Start Development Server\n\`\`\`bash\n${pkgManager === 'npm' ? 'npm run dev' : `${pkgManager} dev`}\n\`\`\`\n`;
     if (includeServer) {
       projectReadme += `This runs the frontend (Vite) and the backend (Express) concurrently.\n`;
     }
     projectReadme += `\n`;
     if (includeTesting) {
-      projectReadme += `### 3. Run Automated Tests\n\`\`\`bash\nnpm run test\n\`\`\`\n\n`;
+      projectReadme += `### 3. Run Automated Tests\n\`\`\`bash\n${pkgManager === 'npm' ? 'npm run test' : `${pkgManager} test`}\n\`\`\`\n\n`;
     }
-    projectReadme += `### 4. Build for Production\n\`\`\`bash\nnpm run build\n\`\`\`\n\n`;
-    projectReadme += `## 📂 Folder Breakdown\n\n`;
-    projectReadme += `- \`src/components/\`: Core UI elements.\n`;
-    projectReadme += `- \`src/services/\`: Axios instance containing logs/token interceptors (\`api.ts\`).\n`;
-    projectReadme += `- \`src/store/\`: Global Zustand store settings.\n`;
-    projectReadme += `- \`src/hooks/\`: TanStack Query fetchers and mutations.\n`;
-    if (includeServer) {
-      projectReadme += `- \`server/\`: Backend routes and Express launch instance.\n`;
+    if (includeEslint) {
+      projectReadme += `### 4. Lint & Format Code\n\`\`\`bash\n${pkgManager === 'npm' ? 'npm run lint' : `${pkgManager} lint`}\n${pkgManager === 'npm' ? 'npm run format' : `${pkgManager} format`}\n\`\`\`\n\n`;
     }
-    if (includeTesting) {
-      projectReadme += `- \`src/components/__tests__/\`: Unit test specs.\n`;
-    }
+    projectReadme += `### Build for Production\n\`\`\`bash\n${pkgManager === 'npm' ? 'npm run build' : `${pkgManager} build`}\n\`\`\`\n\n`;
 
     fs.writeFileSync(
       path.join(targetDir, 'README.md'),
       projectReadme
     );
 
-    // 11. Cleanup setup templates (only if inPlace, to clean workspace)
+    // 11. Optional Git Initialization
+    if (initGit) {
+      try {
+        console.log('- Initializing Git repository...');
+        execSync('git init', { cwd: targetDir, stdio: 'ignore' });
+        execSync('git add .', { cwd: targetDir, stdio: 'ignore' });
+        execSync('git commit -m "Initial commit from create-vite-app"', { cwd: targetDir, stdio: 'ignore' });
+        console.log('\x1b[32m✔ Git repository initialized with initial commit!\x1b[0m');
+      } catch (e) {
+        console.warn('Warning: Failed to initialize Git repository.', e.message);
+      }
+    }
+
+    // 12. Cleanup setup templates (only if inPlace, to clean workspace)
     let cleanup = 'y';
     if (inPlace) {
       cleanup = (await askQuestion('🧹 Clean up setup generator files & templates? (y/n, default: y): ')).trim().toLowerCase();
     } else {
-      cleanup = 'n'; // keep templates inside source generator repo
+      cleanup = 'n';
     }
 
     if (cleanup !== 'n') {
       console.log('- Cleaning setup artifacts and template source files...');
       try {
         fs.rmSync(path.join(targetDir, 'templates'), { recursive: true, force: true });
-        // We defer self-deletion slightly to let execution finish cleanly
         setTimeout(() => {
           try {
             fs.unlinkSync(path.join(targetDir, 'setup.js'));
@@ -326,10 +365,10 @@ async function main() {
 
     console.log('\n\x1b[32m✔ Project successfully generated!\x1b[0m');
 
-    const installResponse = (await askQuestion('📦 Install npm dependencies now? (y/n, default: y): ')).trim().toLowerCase();
+    const installResponse = (await askQuestion(`📦 Install dependencies now using ${pkgManager}? (y/n, default: y): `)).trim().toLowerCase();
     if (installResponse !== 'n') {
-      console.log('\n📦 Running "npm install"... (This may take a minute)');
-      execSync('npm install', { cwd: targetDir, stdio: 'inherit' });
+      console.log(`\n📦 Running "${pkgManager} install"... (This may take a minute)`);
+      execSync(`${pkgManager} install`, { cwd: targetDir, stdio: 'inherit' });
       console.log('\n\x1b[32m✔ Dependencies installed successfully!\x1b[0m');
     }
 
@@ -337,7 +376,8 @@ async function main() {
     if (!inPlace) {
       console.log(`\x1b[36mcd ${projectName}\x1b[0m`);
     }
-    console.log('\x1b[36mnpm run dev\x1b[0m\n');
+    const runDevCmd = pkgManager === 'npm' ? 'npm run dev' : `${pkgManager} dev`;
+    console.log(`\x1b[36m${runDevCmd}\x1b[0m\n`);
 
   } catch (err) {
     console.error('\n\x1b[31mError assembling project:\x1b[0m', err);

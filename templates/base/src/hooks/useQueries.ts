@@ -21,16 +21,13 @@ export function usePosts() {
   return useQuery<Post[], Error>({
     queryKey: ['posts'],
     queryFn: async () => {
-      // If we are hitting our express backend, it maps to /api/posts.
-      // Otherwise, we fallback to public JSONPlaceholder API.
       try {
         const response = await api.get<Post[]>('/posts');
-        return response.data.slice(0, 5); // Limit to 5 items for clean UI
+        return Array.isArray(response.data) ? response.data.slice(0, 5) : [];
       } catch (err) {
-        // Fallback to JSONPlaceholder directly if local server isn't running or error occurs
         console.warn('Backend server posts fetch failed, trying JSONPlaceholder fallback...');
         const response = await api.get<Post[]>('https://jsonplaceholder.typicode.com/posts');
-        return response.data.slice(0, 5);
+        return Array.isArray(response.data) ? response.data.slice(0, 5) : [];
       }
     },
     staleTime: 30000, // 30 seconds cache fresh time

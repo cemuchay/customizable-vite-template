@@ -48,11 +48,10 @@ export default function Layout({ children, currentPath = '/', onNavigate }: Layo
                     <button
                       key={item.path}
                       onClick={() => onNavigate(item.path)}
-                      className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold tracking-wide transition-all ${
-                        isActive
+                      className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold tracking-wide transition-all ${isActive
                           ? 'bg-indigo-500/10 text-indigo-500 dark:text-indigo-400'
                           : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200'
-                      }`}
+                        }`}
                     >
                       <Icon className="w-3.5 h-3.5" />
                       {item.label}
@@ -86,7 +85,7 @@ export default function Layout({ children, currentPath = '/', onNavigate }: Layo
       {/* Sticky footer */}
       <footer className="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-6 text-center text-xs text-slate-400">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p>© {new Date().getFullYear()} Antigravity Web Template. Open Source MIT License.</p>
+          <p>© {new Date().getFullYear()} Open Source MIT License.</p>
           <div className="flex items-center gap-4">
             <span className="hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer">Privacy Policy</span>
             <span className="hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer">Terms of Service</span>

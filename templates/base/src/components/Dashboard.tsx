@@ -135,7 +135,7 @@ export default function Dashboard() {
             <Activity className="w-4 h-4 text-emerald-500" />
           </div>
           <div className="text-2xl font-bold mt-2">
-            {statsLoading ? <div className="h-8 w-24 bg-slate-200 dark:bg-slate-800 rounded animate-pulse" /> : stats?.requestsCount.toLocaleString()}
+            {statsLoading ? <div className="h-8 w-24 bg-slate-200 dark:bg-slate-800 rounded animate-pulse" /> : (stats?.requestsCount ?? 0).toLocaleString()}
           </div>
           <p className="text-[10px] text-emerald-500 font-medium mt-1">Live requests stream</p>
         </div>
@@ -280,13 +280,13 @@ export default function Dashboard() {
                 Retry Request
               </button>
             </div>
-          ) : posts && posts.length === 0 ? (
+          ) : !Array.isArray(posts) || posts.length === 0 ? (
             <div className="p-12 text-center border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">
               <p className="text-sm text-slate-400">No posts available. Submit the form to publish one!</p>
             </div>
           ) : (
             <div className="space-y-4">
-              {posts?.map((post) => (
+              {posts.map((post) => (
                 <article 
                   key={post.id} 
                   className="p-5 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 rounded-2xl shadow-sm hover:border-slate-300 dark:hover:border-slate-700 transition-all duration-200"
