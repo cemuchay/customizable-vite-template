@@ -4,6 +4,8 @@ import Dashboard from './components/Dashboard';
 import ApiDemo from './pages/ApiDemo';
 import Docs from './pages/Docs';
 import Settings from './pages/Settings';
+import NotFound from './pages/NotFound';
+import ErrorBoundary from './components/ErrorBoundary';
 
 export default function App() {
   const [currentPath, setCurrentPath] = useState('/');
@@ -19,13 +21,15 @@ export default function App() {
       case '/settings':
         return <Settings />;
       default:
-        return <Dashboard />;
+        return <NotFound onNavigate={setCurrentPath} />;
     }
   };
 
   return (
-    <Layout currentPath={currentPath} onNavigate={setCurrentPath}>
-      {renderContent()}
-    </Layout>
+    <ErrorBoundary onReset={() => setCurrentPath('/')}>
+      <Layout currentPath={currentPath} onNavigate={setCurrentPath}>
+        {renderContent()}
+      </Layout>
+    </ErrorBoundary>
   );
 }

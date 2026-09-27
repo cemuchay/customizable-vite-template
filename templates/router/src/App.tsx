@@ -1,23 +1,27 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router';
+import { BrowserRouter, Routes, Route } from 'react-router';
 import Layout from './components/Layout';
 import Dashboard from './components/Dashboard';
 import ApiDemo from './pages/ApiDemo';
 import Docs from './pages/Docs';
 import Settings from './pages/Settings';
+import NotFound from './pages/NotFound';
+import ErrorBoundary from './components/ErrorBoundary';
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Layout currentPath={window.location.pathname}>
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/api-demo" element={<ApiDemo />} />
-          <Route path="/docs" element={<Docs />} />
-          <Route path="/settings" element={<Settings />} />
-          {/* Wildcard redirect back to root */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </Layout>
-    </BrowserRouter>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <Layout currentPath={window.location.pathname}>
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/api-demo" element={<ApiDemo />} />
+            <Route path="/docs" element={<Docs />} />
+            <Route path="/settings" element={<Settings />} />
+            {/* Catch-all 404 Route */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Layout>
+      </BrowserRouter>
+    </ErrorBoundary>
   );
 }

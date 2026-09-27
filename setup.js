@@ -99,17 +99,20 @@ async function main() {
     copyTemplate('base/src/vite-env.d.ts', 'src/vite-env.d.ts');
     copyTemplate('base/src/main.tsx', 'src/main.tsx');
     copyTemplate('base/src/services/api.ts', 'src/services/api.ts');
+    copyTemplate('base/src/services/logger.ts', 'src/services/logger.ts');
     copyTemplate('base/src/store/useStore.ts', 'src/store/useStore.ts');
     copyTemplate('base/src/hooks/useQueries.ts', 'src/hooks/useQueries.ts');
     copyTemplate('base/src/components/ThemeToggle.tsx', 'src/components/ThemeToggle.tsx');
     copyTemplate('base/src/components/ToastContainer.tsx', 'src/components/ToastContainer.tsx');
     copyTemplate('base/src/components/Dashboard.tsx', 'src/components/Dashboard.tsx');
     copyTemplate('base/src/components/Layout.tsx', 'src/components/Layout.tsx');
+    copyTemplate('base/src/components/ErrorBoundary.tsx', 'src/components/ErrorBoundary.tsx');
     
     // Copy base pages
     copyTemplate('base/src/pages/ApiDemo.tsx', 'src/pages/ApiDemo.tsx');
     copyTemplate('base/src/pages/Docs.tsx', 'src/pages/Docs.tsx');
     copyTemplate('base/src/pages/Settings.tsx', 'src/pages/Settings.tsx');
+    copyTemplate('base/src/pages/NotFound.tsx', 'src/pages/NotFound.tsx');
 
     // 4. Handle Styling Setup (Tailwind 3 vs 4)
     if (tailwindChoice === '4') {
