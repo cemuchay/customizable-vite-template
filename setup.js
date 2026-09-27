@@ -242,13 +242,13 @@ async function main() {
     if (includeEslint) {
       packageJson.scripts["lint"] = "eslint .";
       packageJson.scripts["format"] = "prettier --write .";
-      packageJson.devDependencies["eslint"] = "^9.19.0";
-      packageJson.devDependencies["@eslint/js"] = "^9.19.0";
+      packageJson.devDependencies["eslint"] = "^9.21.0";
+      packageJson.devDependencies["@eslint/js"] = "^9.21.0";
       packageJson.devDependencies["eslint-plugin-react-hooks"] = "^5.1.0";
-      packageJson.devDependencies["eslint-plugin-react-refresh"] = "^0.4.18";
-      packageJson.devDependencies["globals"] = "^15.14.0";
-      packageJson.devDependencies["typescript-eslint"] = "^8.21.0";
-      packageJson.devDependencies["prettier"] = "^3.4.2";
+      packageJson.devDependencies["eslint-plugin-react-refresh"] = "^0.4.19";
+      packageJson.devDependencies["globals"] = "^16.0.0";
+      packageJson.devDependencies["typescript-eslint"] = "^8.25.0";
+      packageJson.devDependencies["prettier"] = "^3.5.2";
     }
 
     // Inject server dependencies
