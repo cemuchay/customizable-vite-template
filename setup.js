@@ -30,6 +30,9 @@ async function main() {
     }
   }
 
+  const authResponse = (await askQuestion('🔐 Include Authentication & Protected Routes? (y/n, default: y): ')).trim().toLowerCase();
+  const includeAuth = authResponse !== 'n';
+
   const routerResponse = (await askQuestion('🚦 Include React Router v7? (y/n, default: y): ')).trim().toLowerCase();
   const includeRouter = routerResponse !== 'n';
 
@@ -41,6 +44,9 @@ async function main() {
 
   const eslintResponse = (await askQuestion('🧹 Include ESLint v9 + Prettier code formatting? (y/n, default: y): ')).trim().toLowerCase();
   const includeEslint = eslintResponse !== 'n';
+
+  const vercelResponse = (await askQuestion('▲  Include Vercel deployment config (vercel.json)? (y/n, default: y): ')).trim().toLowerCase();
+  const includeVercel = vercelResponse !== 'n';
 
   const gitResponse = (await askQuestion('🌱 Initialize Git repository automatically? (y/n, default: y): ')).trim().toLowerCase();
   const initGit = gitResponse !== 'n';
@@ -56,10 +62,12 @@ async function main() {
   console.log('\n\x1b[36mConfiguring Stack Summary:\x1b[0m');
   console.log(`- Project Path:      ${targetDir}`);
   console.log(`- Tailwind CSS:      v${tailwindChoice}`);
+  console.log(`- Authentication:    ${includeAuth ? 'Yes (Zustand + Protected Routes)' : 'No'}`);
   console.log(`- React Router v7:   ${includeRouter ? 'Yes' : 'No'}`);
   console.log(`- Testing (Vitest):  ${includeTesting ? 'Yes' : 'No'}`);
   console.log(`- Express Backend:   ${includeServer ? 'Yes' : 'No'}`);
   console.log(`- ESLint + Prettier: ${includeEslint ? 'Yes' : 'No'}`);
+  console.log(`- Vercel Config:     ${includeVercel ? 'Yes (vercel.json)' : 'No'}`);
   console.log(`- Git Repository:    ${initGit ? 'Yes' : 'No'}`);
   console.log(`- Package Manager:   ${pkgManager}`);
   console.log('');
@@ -125,13 +133,34 @@ async function main() {
       copyTemplate('tailwind3/postcss.config.js', 'postcss.config.js');
     }
 
-    // 5. Handle Routing Setup
-    if (includeRouter) {
-      console.log('- Injecting React Router v7 routes...');
-      copyTemplate('router/src/App.tsx', 'src/App.tsx');
+    // 5. Handle Authentication Setup
+    if (includeAuth) {
+      console.log('- Injecting Authentication & Protected Route assets...');
+      copyTemplate('auth/src/store/useAuthStore.ts', 'src/store/useAuthStore.ts');
+      copyTemplate('auth/src/components/ProtectedRoute.tsx', 'src/components/ProtectedRoute.tsx');
+      copyTemplate('auth/src/components/Layout.tsx', 'src/components/Layout.tsx');
+      copyTemplate('auth/src/pages/Login.tsx', 'src/pages/Login.tsx');
+
+      if (includeRouter) {
+        copyTemplate('auth/src/App.router.tsx', 'src/App.tsx');
+      } else {
+        copyTemplate('auth/src/App.norouter.tsx', 'src/App.tsx');
+      }
     } else {
-      console.log('- Injecting standard single-page app configuration...');
-      copyTemplate('norouter/src/App.tsx', 'src/App.tsx');
+      // 5b. Handle Non-Auth Routing Setup
+      if (includeRouter) {
+        console.log('- Injecting React Router v7 routes...');
+        copyTemplate('router/src/App.tsx', 'src/App.tsx');
+      } else {
+        console.log('- Injecting standard single-page app configuration...');
+        copyTemplate('norouter/src/App.tsx', 'src/App.tsx');
+      }
+    }
+
+    // 5c. Handle Vercel Deployment Setup
+    if (includeVercel) {
+      console.log('- Generating Vercel deployment configuration (vercel.json)...');
+      copyTemplate('vercel/vercel.json', 'vercel.json');
     }
 
     // 6. Handle Testing Setup
