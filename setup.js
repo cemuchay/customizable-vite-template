@@ -108,6 +108,7 @@ async function main() {
     copyTemplate('base/src/main.tsx', 'src/main.tsx');
     copyTemplate('base/src/services/api.ts', 'src/services/api.ts');
     copyTemplate('base/src/services/logger.ts', 'src/services/logger.ts');
+    copyTemplate('base/src/services/toast.ts', 'src/services/toast.ts');
     copyTemplate('base/src/store/useStore.ts', 'src/store/useStore.ts');
     copyTemplate('base/src/hooks/useQueries.ts', 'src/hooks/useQueries.ts');
     copyTemplate('base/src/components/ThemeToggle.tsx', 'src/components/ThemeToggle.tsx');

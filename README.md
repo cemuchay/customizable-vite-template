@@ -153,6 +153,31 @@ import { logger } from './services/logger';
 logger.logError(new Error('Network heartbeat lost'));
 ```
 
+### Global Toast Notifications
+```typescript
+import { toast } from './services/toast';
+
+// 1. Basic alerts
+toast.success('Project created successfully!');
+toast.error('Failed to sync changes', { title: 'Network Error' });
+toast.warning('Storage is almost full', { duration: 6000 });
+
+// 2. Interactive action toast
+toast.info('Item archived', {
+  action: {
+    label: 'Undo',
+    onClick: () => console.log('Undo action triggered'),
+  },
+});
+
+// 3. Promise lifecycle tracking (Loading -> Success/Error)
+await toast.promise(saveUserData(), {
+  loading: 'Saving profile updates...',
+  success: 'Profile updated!',
+  error: (err) => `Failed to update: ${err.message}`,
+});
+```
+
 ---
 
 ## 🛡️ License

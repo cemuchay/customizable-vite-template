@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { toast, ToastType } from '../services/toast';
 
 export interface Notification {
   id: string;
@@ -17,7 +18,7 @@ interface AppState {
   // Theme state
   theme: 'light' | 'dark';
   toggleTheme: () => void;
-  
+
   // User session state
   user: User | null;
   loginUser: (user: User) => void;
@@ -34,44 +35,37 @@ export const useStore = create<AppState>()(
     (set) => ({
       // Theme defaults to 'dark' for the premium dark mode default look
       theme: 'dark',
-      toggleTheme: () => set((state) => {
-        const nextTheme = state.theme === 'light' ? 'dark' : 'light';
-        // Synchronize HTML element classes for Tailwind
-        if (nextTheme === 'dark') {
-          document.documentElement.classList.add('dark');
-        } else {
-          document.documentElement.classList.remove('dark');
-        }
-        return { theme: nextTheme };
-      }),
+      toggleTheme: () =>
+        set((state) => {
+          const nextTheme = state.theme === 'light' ? 'dark' : 'light';
+          // Synchronize HTML element classes for Tailwind
+          if (typeof document !== 'undefined') {
+            if (nextTheme === 'dark') {
+              document.documentElement.classList.add('dark');
+            } else {
+              document.documentElement.classList.remove('dark');
+            }
+          }
+          return { theme: nextTheme };
+        }),
 
       // User session initial state
       user: {
         username: 'Developer',
         email: 'dev@vite-template.io',
-        role: 'Admin'
+        role: 'Admin',
       },
       loginUser: (user) => set({ user }),
       logoutUser: () => set({ user: null }),
 
-      // Notification management
+      // Notification management bridged directly into global toast service
       notifications: [],
       addNotification: (message, type = 'info') => {
-        const id = Math.random().toString(36).substring(2, 9);
-        set((state) => ({
-          notifications: [...state.notifications, { id, type, message }]
-        }));
-        
-        // Auto-remove notification after 4 seconds
-        setTimeout(() => {
-          set((state) => ({
-            notifications: state.notifications.filter((n) => n.id !== id)
-          }));
-        }, 4000);
+        toast.show(message, { type: type as ToastType });
       },
-      removeNotification: (id) => set((state) => ({
-        notifications: state.notifications.filter((n) => n.id !== id)
-      }))
+      removeNotification: (id) => {
+        toast.dismiss(id);
+      },
     }),
     {
       name: 'app-storage',
@@ -83,3 +77,5 @@ export const useStore = create<AppState>()(
     }
   )
 );
+
+export default useStore;
