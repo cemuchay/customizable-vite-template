@@ -30,6 +30,9 @@ async function main() {
     }
   }
 
+  const authResponse = (await askQuestion('🔐 Include Authentication & Protected Routes? (y/n, default: y): ')).trim().toLowerCase();
+  const includeAuth = authResponse !== 'n';
+
   const routerResponse = (await askQuestion('🚦 Include React Router v7? (y/n, default: y): ')).trim().toLowerCase();
   const includeRouter = routerResponse !== 'n';
 
@@ -41,6 +44,9 @@ async function main() {
 
   const eslintResponse = (await askQuestion('🧹 Include ESLint v9 + Prettier code formatting? (y/n, default: y): ')).trim().toLowerCase();
   const includeEslint = eslintResponse !== 'n';
+
+  const vercelResponse = (await askQuestion('▲  Include Vercel deployment config (vercel.json)? (y/n, default: y): ')).trim().toLowerCase();
+  const includeVercel = vercelResponse !== 'n';
 
   const gitResponse = (await askQuestion('🌱 Initialize Git repository automatically? (y/n, default: y): ')).trim().toLowerCase();
   const initGit = gitResponse !== 'n';
@@ -56,10 +62,12 @@ async function main() {
   console.log('\n\x1b[36mConfiguring Stack Summary:\x1b[0m');
   console.log(`- Project Path:      ${targetDir}`);
   console.log(`- Tailwind CSS:      v${tailwindChoice}`);
+  console.log(`- Authentication:    ${includeAuth ? 'Yes (Zustand + Protected Routes)' : 'No'}`);
   console.log(`- React Router v7:   ${includeRouter ? 'Yes' : 'No'}`);
   console.log(`- Testing (Vitest):  ${includeTesting ? 'Yes' : 'No'}`);
   console.log(`- Express Backend:   ${includeServer ? 'Yes' : 'No'}`);
   console.log(`- ESLint + Prettier: ${includeEslint ? 'Yes' : 'No'}`);
+  console.log(`- Vercel Config:     ${includeVercel ? 'Yes (vercel.json)' : 'No'}`);
   console.log(`- Git Repository:    ${initGit ? 'Yes' : 'No'}`);
   console.log(`- Package Manager:   ${pkgManager}`);
   console.log('');
@@ -99,17 +107,21 @@ async function main() {
     copyTemplate('base/src/vite-env.d.ts', 'src/vite-env.d.ts');
     copyTemplate('base/src/main.tsx', 'src/main.tsx');
     copyTemplate('base/src/services/api.ts', 'src/services/api.ts');
+    copyTemplate('base/src/services/logger.ts', 'src/services/logger.ts');
+    copyTemplate('base/src/services/toast.ts', 'src/services/toast.ts');
     copyTemplate('base/src/store/useStore.ts', 'src/store/useStore.ts');
     copyTemplate('base/src/hooks/useQueries.ts', 'src/hooks/useQueries.ts');
     copyTemplate('base/src/components/ThemeToggle.tsx', 'src/components/ThemeToggle.tsx');
     copyTemplate('base/src/components/ToastContainer.tsx', 'src/components/ToastContainer.tsx');
     copyTemplate('base/src/components/Dashboard.tsx', 'src/components/Dashboard.tsx');
     copyTemplate('base/src/components/Layout.tsx', 'src/components/Layout.tsx');
+    copyTemplate('base/src/components/ErrorBoundary.tsx', 'src/components/ErrorBoundary.tsx');
     
     // Copy base pages
     copyTemplate('base/src/pages/ApiDemo.tsx', 'src/pages/ApiDemo.tsx');
     copyTemplate('base/src/pages/Docs.tsx', 'src/pages/Docs.tsx');
     copyTemplate('base/src/pages/Settings.tsx', 'src/pages/Settings.tsx');
+    copyTemplate('base/src/pages/NotFound.tsx', 'src/pages/NotFound.tsx');
 
     // 4. Handle Styling Setup (Tailwind 3 vs 4)
     if (tailwindChoice === '4') {
@@ -122,13 +134,34 @@ async function main() {
       copyTemplate('tailwind3/postcss.config.js', 'postcss.config.js');
     }
 
-    // 5. Handle Routing Setup
-    if (includeRouter) {
-      console.log('- Injecting React Router v7 routes...');
-      copyTemplate('router/src/App.tsx', 'src/App.tsx');
+    // 5. Handle Authentication Setup
+    if (includeAuth) {
+      console.log('- Injecting Authentication & Protected Route assets...');
+      copyTemplate('auth/src/store/useAuthStore.ts', 'src/store/useAuthStore.ts');
+      copyTemplate('auth/src/components/ProtectedRoute.tsx', 'src/components/ProtectedRoute.tsx');
+      copyTemplate('auth/src/components/Layout.tsx', 'src/components/Layout.tsx');
+      copyTemplate('auth/src/pages/Login.tsx', 'src/pages/Login.tsx');
+
+      if (includeRouter) {
+        copyTemplate('auth/src/App.router.tsx', 'src/App.tsx');
+      } else {
+        copyTemplate('auth/src/App.norouter.tsx', 'src/App.tsx');
+      }
     } else {
-      console.log('- Injecting standard single-page app configuration...');
-      copyTemplate('norouter/src/App.tsx', 'src/App.tsx');
+      // 5b. Handle Non-Auth Routing Setup
+      if (includeRouter) {
+        console.log('- Injecting React Router v7 routes...');
+        copyTemplate('router/src/App.tsx', 'src/App.tsx');
+      } else {
+        console.log('- Injecting standard single-page app configuration...');
+        copyTemplate('norouter/src/App.tsx', 'src/App.tsx');
+      }
+    }
+
+    // 5c. Handle Vercel Deployment Setup
+    if (includeVercel) {
+      console.log('- Generating Vercel deployment configuration (vercel.json)...');
+      copyTemplate('vercel/vercel.json', 'vercel.json');
     }
 
     // 6. Handle Testing Setup
@@ -210,13 +243,13 @@ async function main() {
     if (includeEslint) {
       packageJson.scripts["lint"] = "eslint .";
       packageJson.scripts["format"] = "prettier --write .";
-      packageJson.devDependencies["eslint"] = "^9.19.0";
-      packageJson.devDependencies["@eslint/js"] = "^9.19.0";
+      packageJson.devDependencies["eslint"] = "^9.21.0";
+      packageJson.devDependencies["@eslint/js"] = "^9.21.0";
       packageJson.devDependencies["eslint-plugin-react-hooks"] = "^5.1.0";
-      packageJson.devDependencies["eslint-plugin-react-refresh"] = "^0.4.18";
-      packageJson.devDependencies["globals"] = "^15.14.0";
-      packageJson.devDependencies["typescript-eslint"] = "^8.21.0";
-      packageJson.devDependencies["prettier"] = "^3.4.2";
+      packageJson.devDependencies["eslint-plugin-react-refresh"] = "^0.4.19";
+      packageJson.devDependencies["globals"] = "^16.0.0";
+      packageJson.devDependencies["typescript-eslint"] = "^8.25.0";
+      packageJson.devDependencies["prettier"] = "^3.5.2";
     }
 
     // Inject server dependencies
