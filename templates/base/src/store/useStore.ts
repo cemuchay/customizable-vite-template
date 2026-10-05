@@ -68,7 +68,7 @@ export const useStore = create<AppState>()(
       },
     }),
     {
-      name: 'app-storage',
+      name: 'app_storage',
       // Persist only the theme and user settings
       partialize: (state) => ({
         theme: state.theme,

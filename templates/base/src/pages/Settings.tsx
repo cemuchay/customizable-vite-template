@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
 import { Settings as SettingsIcon, Save, RefreshCw, Trash2 } from 'lucide-react';
 import { useStore } from '../store/useStore';
+import { safeLocalStorage } from '../services/storage';
 
 export default function Settings() {
   const { user, loginUser, logoutUser, addNotification } = useStore();
@@ -20,7 +20,7 @@ export default function Settings() {
   };
 
   const handleClearCache = () => {
-    localStorage.removeItem('app-storage');
+    safeLocalStorage.removeItem('app_storage');
     addNotification('Zustand cache cleared. Please refresh.', 'info');
   };
 

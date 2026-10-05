@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { safeLocalStorage } from '../services/storage';
 
 export interface User {
   id: string;
@@ -96,10 +97,8 @@ export const useAuthStore = create<AuthState>()(
 
           const mockToken = `jwt_mock_${matchedUser.id}_${Date.now()}`;
 
-          // Synchronize token in localStorage for direct Axios interceptor access
-          if (typeof window !== 'undefined') {
-            localStorage.setItem('token', mockToken);
-          }
+          // Synchronize token safely for Axios interceptor access
+          safeLocalStorage.setItem('token', mockToken);
 
           set({
             user: matchedUser,
@@ -120,9 +119,7 @@ export const useAuthStore = create<AuthState>()(
       },
 
       logout: () => {
-        if (typeof window !== 'undefined') {
-          localStorage.removeItem('token');
-        }
+        safeLocalStorage.removeItem('token');
         set({
           user: null,
           token: null,
