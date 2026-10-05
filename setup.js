@@ -109,6 +109,10 @@ async function main() {
     copyTemplate('base/src/services/api.ts', 'src/services/api.ts');
     copyTemplate('base/src/services/logger.ts', 'src/services/logger.ts');
     copyTemplate('base/src/services/toast.ts', 'src/services/toast.ts');
+    copyTemplate('base/src/services/storageKeys.ts', 'src/services/storageKeys.ts');
+    copyTemplate('base/src/services/safeStorage.ts', 'src/services/safeStorage.ts');
+    copyTemplate('base/src/services/safeIndexedDB.ts', 'src/services/safeIndexedDB.ts');
+    copyTemplate('base/src/services/storage.ts', 'src/services/storage.ts');
     copyTemplate('base/src/store/useStore.ts', 'src/store/useStore.ts');
     copyTemplate('base/src/hooks/useQueries.ts', 'src/hooks/useQueries.ts');
     copyTemplate('base/src/components/ThemeToggle.tsx', 'src/components/ThemeToggle.tsx');
@@ -168,6 +172,7 @@ async function main() {
     if (includeTesting) {
       console.log('- Loading Vitest config files and mock specs...');
       copyTemplate('vitest/src/test/setup.ts', 'src/test/setup.ts');
+      copyTemplate('vitest/src/test/storage.test.ts', 'src/test/storage.test.ts');
       copyTemplate('vitest/src/components/__tests__/ThemeToggle.test.tsx', 'src/components/__tests__/ThemeToggle.test.tsx');
       copyTemplate('vitest/src/components/__tests__/Dashboard.test.tsx', 'src/components/__tests__/Dashboard.test.tsx');
     }

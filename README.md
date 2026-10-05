@@ -49,6 +49,7 @@ The core engine is bootstrapped with high-performance, production-ready utilitie
 - 🧭 **404 Not Found Page**: Dedicated not-found view with seamless navigation back to safety.
 - 📝 **Smart Error Logger (`logger.ts`)**: Intelligent deduplicating logging engine with a 60s sliding window cache to prevent log spam.
 - 🌐 **Resilient Axios Engine (`api.ts`)**: Pre-configured client with 10s default timeouts, **automatic 3x retry** with exponential backoff + jitter for network/5xx failures, auth headers, and typed HTTP helpers.
+- 💾 **Safe Storage Gateways (`storage.ts`)**: Resilient, type-safe gateways for `localStorage`, `sessionStorage`, and `IndexedDB` with centralized schema keys, auto JSON parsing, QuotaExceeded handling, and graceful in-memory fallbacks.
 - 🐻 **Zustand** for persistent, lightweight global client state management.
 - 🔄 **TanStack Query (React Query v5)** for server state synchronization and caching.
 - ▲ **Vercel-Ready**: Pre-configured `vercel.json` with SPA catch-all rewrites preventing 404s on page refresh.
@@ -96,7 +97,12 @@ Once setup finishes, your generated project follows this clean structure:
   │   │   └── Settings.tsx      # Protected application preferences
   │   ├── services/
   │   │   ├── api.ts            # Resilient Axios client (timeout, 3x retries, interceptors)
-  │   │   └── logger.ts         # Smart deduplicating error logger (TTL window)
+  │   │   ├── logger.ts         # Smart deduplicating error logger (TTL window)
+  │   │   ├── toast.ts          # Toast notification manager
+  │   │   ├── storageKeys.ts    # Centralized storage schema & key contracts
+  │   │   ├── safeStorage.ts    # Safe localStorage & sessionStorage gateways
+  │   │   ├── safeIndexedDB.ts  # Safe IndexedDB async gateway
+  │   │   └── storage.ts        # Storage barrel exports
   │   ├── store/
   │   │   ├── useAuthStore.ts   # Zustand persisted authentication store
   │   │   └── useStore.ts       # Zustand global store configuration

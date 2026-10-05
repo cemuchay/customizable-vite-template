@@ -1,4 +1,4 @@
-import { BookOpen, Code, Layers, MessageSquare, Play, HelpCircle } from 'lucide-react';
+import { BookOpen, Code, Layers, MessageSquare, Play, HelpCircle, Database } from 'lucide-react';
 
 export default function Docs() {
   const sections = [
@@ -51,6 +51,36 @@ const mutation = useMutation({
     queryClient.invalidateQueries({ queryKey: ['todos'] });
   }
 });`}
+          </pre>
+        </div>
+      ),
+    },
+    {
+      title: 'Safe Storage Gateways',
+      icon: Database,
+      color: 'text-cyan-500',
+      description: 'Type-safe, resilient gateways for LocalStorage, SessionStorage, and IndexedDB.',
+      content: (
+        <div className="space-y-2">
+          <p className="text-xs text-slate-500">Centralized keys, auto-JSON, and in-memory fallbacks:</p>
+          <pre className="p-3 bg-slate-950 text-slate-300 rounded-xl text-[11px] font-mono overflow-x-auto">
+{`import { safeLocalStorage, safeSessionStorage, safeIndexedDB } from '../services/storage';
+
+// LocalStorage: type-checked key & fallback
+const theme = safeLocalStorage.getItem('app_theme', 'dark');
+safeLocalStorage.setItem('app_theme', 'light');
+
+// SessionStorage: type-checked key
+safeSessionStorage.setItem('redirect_after_login', '/dashboard');
+
+// IndexedDB: async promise-based CRUD
+await safeIndexedDB.set('drafts', {
+  id: 'draft_1',
+  title: 'Post Idea',
+  content: '...',
+  updatedAt: Date.now()
+});
+const draft = await safeIndexedDB.get('drafts', 'draft_1');`}
           </pre>
         </div>
       ),

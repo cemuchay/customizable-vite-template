@@ -5,6 +5,7 @@ import axios, {
   AxiosResponse,
   InternalAxiosRequestConfig,
 } from 'axios';
+import { safeLocalStorage } from './storage';
 
 // Extend AxiosRequestConfig to support custom retry and auth options
 export interface CustomRequestConfig extends AxiosRequestConfig {
@@ -70,7 +71,7 @@ const createApiClient = (baseURL: string = import.meta.env.VITE_API_URL || '/api
   client.interceptors.request.use(
     (config: InternalAxiosRequestConfig & CustomRequestConfig) => {
       if (!config.skipAuth) {
-        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+        const token = safeLocalStorage.getItem('token');
         if (token && config.headers) {
           config.headers.Authorization = `Bearer ${token}`;
         }
