@@ -18,6 +18,7 @@ Here is how you can spin up and test a sample project in under 2 minutes:
   - **Project Name**: `my-test-app` *(creates a new `./my-test-app` directory)*
   - **Tailwind CSS Version**: `4` *(or `3` for legacy config)*
   - **Include Authentication & Protected Routes?**: `y` *(includes Zustand auth store, demo accounts, and route guards)*
+  - **Include Progressive Web App (PWA)?**: `y` *(choose between Heavy Offline Caching or Installability Only)*
   - **Include React Router v7?**: `y`
   - **Include Testing (Vitest)?**: `y`
   - **Include Express Server?**: `y`
@@ -44,6 +45,10 @@ Here is how you can spin up and test a sample project in under 2 minutes:
 The core engine is bootstrapped with high-performance, production-ready utilities:
 
 - ⚡ **Vite + React 19 + TypeScript** for blazing-fast compilations.
+- 📱 **Progressive Web App (PWA) Engine**: Full PWA support with dual caching strategies:
+  - **Heavy Offline Caching**: Pre-caches assets, Google Fonts stylesheets/webfonts, and runtime images for a resilient offline experience.
+  - **Installability Only (Network-First)**: Fast home-screen installation and offline detection with zero stale cache risks for dynamic data.
+  - **Standalone "PWA Later" utility (`npm run add:pwa`)**: Easily inject PWA manifests, icons, and components into any project at any time.
 - 🔐 **Authentication & Protected Routes**: Ready-to-use auth engine with persistent state (`localStorage`), role-based guards (`<ProtectedRoute>`), and 1-click **Demo Login** buttons for instant testing.
 - 🛡️ **UI Error Boundary & Observability**: Built-in React Error Boundary fallback with "Return to Home", "Reload Page", and technical error diagnosis.
 - 🧭 **404 Not Found Page**: Dedicated not-found view with seamless navigation back to safety.
@@ -64,11 +69,12 @@ Run the CLI wizard to customize your environment with:
 
 1. **Tailwind CSS v4** (using the new CSS-first `@tailwindcss/vite` compiler) **or** **Tailwind CSS v3** (using traditional PostCSS configurations).
 2. **Authentication & Protected Routes** with Zustand persisted store, login screen, and `<ProtectedRoute>` guards.
-3. **React Router v7** Client Routing setup **or** a state-based tabbed Single Page App layout.
-4. **Vitest + JSDOM + Testing Library** configured for instant automated unit & integration component tests.
-5. **Express.js API Server** in TypeScript running concurrently using `tsx` watcher support and Vite reverse-proxy handlers.
-6. **ESLint v9 Flat Config + Prettier** for standardized linting and automated formatting.
-7. **Vercel Deployment Configuration (`vercel.json`)** for instant SPA deployment.
+3. **Progressive Web App (PWA)**: Choose between **Heavy Offline Caching** or **Installability Only (Network-First)**.
+4. **React Router v7** Client Routing setup **or** a state-based tabbed Single Page App layout.
+5. **Vitest + JSDOM + Testing Library** configured for instant automated unit & integration component tests.
+6. **Express.js API Server** in TypeScript running concurrently using `tsx` watcher support and Vite reverse-proxy handlers.
+7. **ESLint v9 Flat Config + Prettier** for standardized linting and automated formatting.
+8. **Vercel Deployment Configuration (`vercel.json`)** for instant SPA deployment.
 
 ---
 
@@ -85,9 +91,12 @@ Once setup finishes, your generated project follows this clean structure:
   │   │   ├── ErrorBoundary.tsx # UI Error Boundary with home redirection & recovery
   │   │   ├── Layout.tsx        # Sidebar, header with user avatar & sign-out menu
   │   │   ├── ProtectedRoute.tsx# Route guard with role-based access control
+  │   │   ├── PwaInstallPrompt.tsx # PWA home screen installation banner
+  │   │   ├── PwaStatusBanner.tsx  # PWA offline & update notification dialog
   │   │   ├── ThemeToggle.tsx   # Responsive dark mode toggle button
   │   │   └── ToastContainer.tsx# Self-dismissing slide-in notifications
   │   ├── hooks/
+  │   │   ├── usePwa.ts         # PWA installation, updates & online/offline hook
   │   │   └── useQueries.ts     # TanStack Query custom query & mutation hooks
   │   ├── pages/
   │   │   ├── ApiDemo.tsx       # Live playground for Axios retries, headers & errors
@@ -182,6 +191,35 @@ await toast.promise(saveUserData(), {
   success: 'Profile updated!',
   error: (err) => `Failed to update: ${err.message}`,
 });
+```
+
+### 📱 Progressive Web App (PWA) & Offline Usage
+
+#### 1. Checking Status & Triggering Native Installation
+```typescript
+import { usePwa } from './hooks/usePwa';
+
+function Header() {
+  const { isInstallable, installApp, isOffline, needRefresh, updateApp } = usePwa();
+
+  return (
+    <div>
+      {isOffline && <span>Offline Mode Active</span>}
+      {isInstallable && (
+        <button onClick={installApp}>Install App</button>
+      )}
+      {needRefresh && (
+        <button onClick={updateApp}>New Version Available - Reload</button>
+      )}
+    </div>
+  );
+}
+```
+
+#### 2. Adding PWA to an Existing Project
+If you initially declined PWA support during project setup, you can add it anytime by running:
+```bash
+npm run add:pwa
 ```
 
 ---

@@ -1,4 +1,4 @@
-import { BookOpen, Code, Layers, MessageSquare, Play, HelpCircle, Database } from 'lucide-react';
+import { BookOpen, Code, Layers, MessageSquare, Play, HelpCircle, Database, Smartphone } from 'lucide-react';
 
 export default function Docs() {
   const sections = [
@@ -82,6 +82,35 @@ await safeIndexedDB.set('drafts', {
 });
 const draft = await safeIndexedDB.get('drafts', 'draft_1');`}
           </pre>
+        </div>
+      ),
+    },
+    {
+      title: 'Progressive Web App (PWA)',
+      icon: Smartphone,
+      color: 'text-pink-500',
+      description: 'Dual caching strategies (Heavy Offline vs Install-Only) and usePwa hook.',
+      content: (
+        <div className="space-y-2">
+          <p className="text-xs text-slate-500">Managing install prompts, updates & network state:</p>
+          <pre className="p-3 bg-slate-950 text-slate-300 rounded-xl text-[11px] font-mono overflow-x-auto">
+{`import { usePwa } from '../hooks/usePwa';
+
+const { isInstallable, installApp, isOffline, needRefresh, updateApp } = usePwa();
+
+// Trigger native installation prompt
+if (isInstallable) {
+  await installApp();
+}
+
+// Check offline state
+if (isOffline) {
+  console.log('App is operating in cached mode');
+}`}
+          </pre>
+          <p className="text-[11px] text-slate-400">
+            Did not enable PWA during setup? Run <code className="font-mono text-indigo-400">npm run add:pwa</code> anytime.
+          </p>
         </div>
       ),
     },

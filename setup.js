@@ -33,6 +33,18 @@ async function main() {
   const authResponse = (await askQuestion('🔐 Include Authentication & Protected Routes? (y/n, default: y): ')).trim().toLowerCase();
   const includeAuth = authResponse !== 'n';
 
+  const pwaResponse = (await askQuestion('📲 Include Progressive Web App (PWA) support? (y/n, default: y): ')).trim().toLowerCase();
+  const includePwa = pwaResponse !== 'n';
+
+  let pwaStrategy = 'heavy';
+  if (includePwa) {
+    console.log('   Select PWA Caching Mode:');
+    console.log('   [1] Heavy Offline Caching (Precache assets, offline fallback, Google Fonts & images cache)');
+    console.log('   [2] Installability Only   (Network-First: fast home-screen install with zero stale data)');
+    let pwaChoice = (await askQuestion('   Strategy (1 or 2, default: 1): ')).trim();
+    pwaStrategy = pwaChoice === '2' ? 'minimal' : 'heavy';
+  }
+
   const routerResponse = (await askQuestion('🚦 Include React Router v7? (y/n, default: y): ')).trim().toLowerCase();
   const includeRouter = routerResponse !== 'n';
 
@@ -63,6 +75,7 @@ async function main() {
   console.log(`- Project Path:      ${targetDir}`);
   console.log(`- Tailwind CSS:      v${tailwindChoice}`);
   console.log(`- Authentication:    ${includeAuth ? 'Yes (Zustand + Protected Routes)' : 'No'}`);
+  console.log(`- PWA Support:       ${includePwa ? (pwaStrategy === 'heavy' ? 'Yes (Heavy Offline Caching)' : 'Yes (Installability Only / Network-First)') : 'No'}`);
   console.log(`- React Router v7:   ${includeRouter ? 'Yes' : 'No'}`);
   console.log(`- Testing (Vitest):  ${includeTesting ? 'Yes' : 'No'}`);
   console.log(`- Express Backend:   ${includeServer ? 'Yes' : 'No'}`);
@@ -168,6 +181,19 @@ async function main() {
       copyTemplate('vercel/vercel.json', 'vercel.json');
     }
 
+    // 5d. Handle PWA Assets & Components Setup
+    if (includePwa) {
+      console.log('- Injecting Progressive Web App (PWA) assets, manifest & components...');
+      copyTemplate('pwa/public/pwa-icon.svg', 'public/pwa-icon.svg');
+      copyTemplate('pwa/src/pwa.config.ts', 'src/pwa.config.ts');
+      copyTemplate('pwa/src/hooks/usePwa.ts', 'src/hooks/usePwa.ts');
+      copyTemplate('pwa/src/components/PwaInstallPrompt.tsx', 'src/components/PwaInstallPrompt.tsx');
+      copyTemplate('pwa/src/components/PwaStatusBanner.tsx', 'src/components/PwaStatusBanner.tsx');
+    }
+
+    // Always copy standalone add-pwa script for users who want to add PWA later
+    copyTemplate('../scripts/add-pwa.js', 'scripts/add-pwa.js');
+
     // 6. Handle Testing Setup
     if (includeTesting) {
       console.log('- Loading Vitest config files and mock specs...');
@@ -200,7 +226,8 @@ async function main() {
       scripts: {
         "dev:client": "vite",
         "build": "tsc && vite build",
-        "preview": "vite preview"
+        "preview": "vite preview",
+        "add:pwa": "node scripts/add-pwa.js"
       },
       dependencies: {
         "react": "^19.0.0",
@@ -222,6 +249,12 @@ async function main() {
     // Inject routing dependencies
     if (includeRouter) {
       packageJson.dependencies["react-router"] = "^7.1.5";
+    }
+
+    // Inject PWA dependencies
+    if (includePwa) {
+      packageJson.devDependencies["vite-plugin-pwa"] = "^0.21.1";
+      packageJson.devDependencies["workbox-window"] = "^7.3.0";
     }
 
     // Inject Tailwind dependencies
@@ -292,6 +325,11 @@ async function main() {
       viteConfig += 'import tailwindcss from \'@tailwindcss/vite\';\n';
     }
 
+    if (includePwa) {
+      viteConfig += 'import { VitePWA } from \'vite-plugin-pwa\';\n';
+      viteConfig += `import { ${pwaStrategy === 'heavy' ? 'getHeavyPwaConfig' : 'getMinimalPwaConfig'} } from './src/pwa.config';\n`;
+    }
+
     viteConfig += '\n// https://vite.dev/config/\n';
     viteConfig += 'export default defineConfig({\n';
     viteConfig += '  plugins: [\n';
@@ -299,6 +337,13 @@ async function main() {
     
     if (tailwindChoice === '4') {
       viteConfig += '    tailwindcss(),\n';
+    }
+
+    if (includePwa) {
+      viteConfig += `    VitePWA(${pwaStrategy === 'heavy' ? 'getHeavyPwaConfig' : 'getMinimalPwaConfig'}({\n`;
+      viteConfig += `      projectName: '${projectName}',\n`;
+      viteConfig += `      shortName: '${projectName.replace(/[^a-zA-Z0-9]/g, '') || 'ViteApp'}',\n`;
+      viteConfig += `    })),\n`;
     }
     
     viteConfig += '  ],\n';
@@ -341,6 +386,7 @@ async function main() {
     projectReadme += `## 🛠 Tech Stack\n\n`;
     projectReadme += `- **Framework**: React 19 + Vite 6 + TypeScript\n`;
     projectReadme += `- **Styling**: Tailwind CSS v${tailwindChoice}\n`;
+    if (includePwa) projectReadme += `- **PWA**: Progressive Web App enabled (${pwaStrategy === 'heavy' ? 'Heavy Offline Caching' : 'Installability Only / Network-First'})\n`;
     if (includeRouter) projectReadme += `- **Routing**: React Router v7\n`;
     if (includeTesting) projectReadme += `- **Testing**: Vitest + React Testing Library + JSDOM\n`;
     if (includeServer) projectReadme += `- **Backend**: Express + TypeScript (\`tsx\` live reload)\n`;
@@ -358,6 +404,9 @@ async function main() {
     }
     if (includeEslint) {
       projectReadme += `### 4. Lint & Format Code\n\`\`\`bash\n${pkgManager === 'npm' ? 'npm run lint' : `${pkgManager} lint`}\n${pkgManager === 'npm' ? 'npm run format' : `${pkgManager} format`}\n\`\`\`\n\n`;
+    }
+    if (!includePwa) {
+      projectReadme += `### 📱 Add PWA Support Later\nTo add PWA features, manifest, and service worker caching at any time:\n\`\`\`bash\n${pkgManager === 'npm' ? 'npm run add:pwa' : `${pkgManager} add:pwa`}\n\`\`\`\n\n`;
     }
     projectReadme += `### Build for Production\n\`\`\`bash\n${pkgManager === 'npm' ? 'npm run build' : `${pkgManager} build`}\n\`\`\`\n\n`;
 
