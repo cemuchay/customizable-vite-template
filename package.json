@@ -12,6 +12,9 @@
     "scripts",
     "README.md"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "engines": {
     "node": ">=16.0.0"
   },
